@@ -1,14 +1,13 @@
 "use strict";
 
 const request = require("../request-config");
+const crc32 = require("../../lib/crc32");
 
 request("site/12/config-changes").then(res => {
     let body = {
-        // Site is initialized only once.
-        // Whether it requires initialization
-        // can be determined by looking at
-        // body.initial property
-        changes: res.body.initial,
+        // Editing existing config
+        // Start with blank changes
+        changes: {},
 
         // return the same timestamp as we received
         // this is required for resolving conflicts
@@ -16,25 +15,23 @@ request("site/12/config-changes").then(res => {
         timestamp: res.body.timestamp,
     };
 
-    // Set 2 letter country code for device radio settings
-    body.changes["locale/code"].value = "LT";
+    let userName = "api_user";
 
-    // TODO: this looks too complicated and will have to be abstracted
-
-    // Important: site entity IDs start at 1000000001
-    const WIRELESS_ID = "1000000001";
+    // User are indexed by hashing their names
+    let userId = crc32(userName);
 
     // Add root node
-    body.changes[`wireless/${WIRELESS_ID}/`] = {
-        value: WIRELESS_ID,
+    body.changes[`users/${userId}/`] = {
+        // all values are strings, otherwise validation will fail
+        value: userId.toString(),
         origin: "site",
     };
 
     // Copy over default values
-    for (let key in res.body.defaults.ssid) {
-        body.changes[`wireless/${WIRELESS_ID}/${key}`] = {
+    for (let key in res.body.defaults.user) {
+        body.changes[`users/${userId}/${key}`] = {
             // Set default value
-            value: res.body.defaults.ssid[key],
+            value: res.body.defaults.user[key],
 
             // since we're editing site config
             // origin is always site
@@ -42,11 +39,11 @@ request("site/12/config-changes").then(res => {
         }
     }
 
-    // Now change only settings that we care about. Set SSID name
-    body.changes[`wireless/${WIRELESS_ID}/ssid`].value = "created via api";
+    // Now change only settings that we care about.
+    body.changes[`users/${userId}/name`].value = userName;
 
-    // Set SSID active on both radios
-    body.changes[`wireless/${WIRELESS_ID}/preferredRadio`].value = "r5,r24";
+    // Generate your password here, refer to crypto lib for obtaining random numbers
+    body.changes[`users/${userId}/passwd`].value = Date.now().toString();
 
     return request({
         uri: "site/12/config-changes",
