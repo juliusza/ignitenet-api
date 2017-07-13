@@ -86,11 +86,11 @@ enable : is the property name
 You’ll also notice that some node have numeric ids, where others don’t:
 
 ```json
-{"wireless/1000000584/broadcastSSID":["1",1424291954,1]}
+{"wireless/1000000584/broadcastSSID":{}}
 ```
 vs  
 ```json
-{"radio/global/bandSteering":["1",1461331102,1]}
+{"radio/global/bandSteering":{}}
 ```
 
 The first key, the one with the id after the root node, is a numeric nodes, and what we refer to as entities.
@@ -168,4 +168,4 @@ You have a couple of different options to proceed from here:
 If you have any doubt about the allowed values of a config key, you can view a device’s configuration from the IgniteNet 
 Cloud UI via the console in the developer tools:
 
-![DevTools](https://github.com/juliusza/ignitenet-api/docs/cloud-ui-dev-tools.png)
+![DevTools](https://raw.githubusercontent.com/juliusza/ignitenet-api/master/docs/cloud-ui-dev-tools.png)
